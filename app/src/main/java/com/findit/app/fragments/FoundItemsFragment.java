@@ -1,0 +1,81 @@
+package com.findit.app.fragments;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
+import com.findit.app.R;
+import com.findit.app.activities.ItemDetailActivity;
+import com.findit.app.adapters.ItemAdapter;
+import com.findit.app.database.FindItDatabaseHelper;
+import com.findit.app.models.Item;
+
+import java.util.List;
+
+public class FoundItemsFragment extends Fragment {
+
+    private SwipeRefreshLayout swipeRefresh;
+    private RecyclerView rvItems;
+    private TextView tvEmptyState;
+
+    private FindItDatabaseHelper dbHelper;
+    private ItemAdapter adapter;
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_item_list, container, false);
+
+        dbHelper = new FindItDatabaseHelper(requireContext());
+
+        swipeRefresh = view.findViewById(R.id.swipeRefresh);
+        rvItems = view.findViewById(R.id.rvItems);
+        tvEmptyState = view.findViewById(R.id.tvEmptyState);
+
+        rvItems.setLayoutManager(new LinearLayoutManager(requireContext()));
+
+        swipeRefresh.setOnRefreshListener(this::loadFoundItems);
+
+        loadFoundItems();
+
+        return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        loadFoundItems();
+    }
+
+    private void loadFoundItems() {
+        List<Item> foundItems = dbHelper.getItemsByType("FOUND");
+
+        if (foundItems.isEmpty()) {
+            tvEmptyState.setText("No found item reports currently available.");
+            tvEmptyState.setVisibility(View.VISIBLE);
+            rvItems.setVisibility(View.GONE);
+        } else {
+            tvEmptyState.setVisibility(View.GONE);
+            rvItems.setVisibility(View.VISIBLE);
+
+            adapter = new ItemAdapter(requireContext(), foundItems, item -> {
+                Intent intent = new Intent(requireContext(), ItemDetailActivity.class);
+                intent.putExtra("ITEM_ID", item.getId());
+                startActivity(intent);
+            });
+            rvItems.setAdapter(adapter);
+        }
+
+        swipeRefresh.setRefreshing(false);
+    }
+}

@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">FindIt</string>
+    <string name="title_lost_items">Lost Items</string>
+    <string name="title_found_items">Found Items</string>
+    <string name="title_search">Search &amp; Filter</string>
+    <string name="title_claims">My Claims</string>
+    <string name="title_profile">User Profile</string>
+    <string name="title_admin">Admin Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+</resources>
