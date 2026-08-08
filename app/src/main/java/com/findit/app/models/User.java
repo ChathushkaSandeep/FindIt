@@ -1,7 +1,7 @@
 package com.findit.app.models;
 
 public class User {
-    private int id;
+    private String id;
     private String fullName;
     private String email;
     private String phone;
@@ -10,9 +10,11 @@ public class User {
     private String status; // "ACTIVE", "SUSPENDED"
     private String createdAt;
 
-    public User() {}
+    public User() {
+    }
 
-    public User(int id, String fullName, String email, String phone, String password, String role, String status, String createdAt) {
+    public User(String id, String fullName, String email, String phone, String password, String role, String status,
+            String createdAt) {
         this.id = id;
         this.fullName = fullName;
         this.email = email;
@@ -23,27 +25,67 @@ public class User {
         this.createdAt = createdAt;
     }
 
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
+    public String getId() {
+        return id;
+    }
 
-    public String getFullName() { return fullName; }
-    public void setFullName(String fullName) { this.fullName = fullName; }
+    public void setId(String id) {
+        this.id = id;
+    }
 
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
+    public String getFullName() {
+        return fullName;
+    }
 
-    public String getPhone() { return phone; }
-    public void setPhone(String phone) { this.phone = phone; }
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
 
-    public String getPassword() { return password; }
-    public void setPassword(String password) { this.password = password; }
+    public String getEmail() {
+        return email;
+    }
 
-    public String getRole() { return role; }
-    public void setRole(String role) { this.role = role; }
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public String getPhone() {
+        return phone;
+    }
 
-    public String getCreatedAt() { return createdAt; }
-    public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
+    }
 }

@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.findit.app.R;
 import com.findit.app.adapters.ItemAdapter;
-import com.findit.app.database.FindItDatabaseHelper;
+import com.findit.app.database.FirestoreHelper;
 import com.findit.app.models.Item;
 import com.findit.app.utils.SessionManager;
 
@@ -25,7 +25,7 @@ public class MyItemsActivity extends AppCompatActivity {
     private RecyclerView rvMyItems;
     private TextView tvEmptyState;
 
-    private FindItDatabaseHelper dbHelper;
+    private FirestoreHelper dbHelper;
     private SessionManager sessionManager;
     private ItemAdapter adapter;
     private List<Item> myItems;
@@ -35,7 +35,7 @@ public class MyItemsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my_items);
 
-        dbHelper = new FindItDatabaseHelper(this);
+        dbHelper = new FirestoreHelper();
         sessionManager = new SessionManager(this);
 
         btnBack = findViewById(R.id.btnBack);
@@ -56,33 +56,55 @@ public class MyItemsActivity extends AppCompatActivity {
     }
 
     private void loadMyItems() {
-        int userId = sessionManager.getUserId();
-        myItems = dbHelper.getItemsByUserId(userId);
-
-        if (myItems.isEmpty()) {
-            tvEmptyState.setVisibility(View.VISIBLE);
-            rvMyItems.setVisibility(View.GONE);
-        } else {
-            tvEmptyState.setVisibility(View.GONE);
-            rvMyItems.setVisibility(View.VISIBLE);
-
-            adapter = new ItemAdapter(this, myItems, item -> {
-                Intent intent = new Intent(MyItemsActivity.this, ItemDetailActivity.class);
-                intent.putExtra("ITEM_ID", item.getId());
-                startActivity(intent);
-            });
-
-            adapter.setActionListener("Mark as Recovered", item -> {
-                boolean success = dbHelper.markItemAsRecovered(item.getId());
-                if (success) {
-                    Toast.makeText(this, "Item marked as RECOVERED!", Toast.LENGTH_SHORT).show();
-                    loadMyItems();
+        String userId = sessionManager.getUserId();
+        dbHelper.getItemsByUserId(userId, new FirestoreHelper.Callback<List<Item>>() {
+            @Override
+            public void onSuccess(List<Item> items) {
+                myItems = items;
+                if (myItems.isEmpty()) {
+                    tvEmptyState.setVisibility(View.VISIBLE);
+                    rvMyItems.setVisibility(View.GONE);
                 } else {
-                    Toast.makeText(this, "Failed to update item status.", Toast.LENGTH_SHORT).show();
-                }
-            });
+                    tvEmptyState.setVisibility(View.GONE);
+                    rvMyItems.setVisibility(View.VISIBLE);
 
-            rvMyItems.setAdapter(adapter);
-        }
+                    adapter = new ItemAdapter(MyItemsActivity.this, myItems, item -> {
+                        Intent intent = new Intent(MyItemsActivity.this, ItemDetailActivity.class);
+                        intent.putExtra("ITEM_ID", item.getId());
+                        startActivity(intent);
+                    });
+
+                    adapter.setActionListener("Mark as Recovered", item -> {
+                        dbHelper.markItemAsRecovered(item.getId(), new FirestoreHelper.Callback<Boolean>() {
+                            @Override
+                            public void onSuccess(Boolean success) {
+                                if (success) {
+                                    Toast.makeText(MyItemsActivity.this, "Item marked as RECOVERED!",
+                                            Toast.LENGTH_SHORT).show();
+                                    loadMyItems();
+                                } else {
+                                    Toast.makeText(MyItemsActivity.this, "Failed to update item status.",
+                                            Toast.LENGTH_SHORT).show();
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Exception e) {
+                                Toast.makeText(MyItemsActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT)
+                                        .show();
+                            }
+                        });
+                    });
+
+                    rvMyItems.setAdapter(adapter);
+                }
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                tvEmptyState.setText("Failed to load items");
+                tvEmptyState.setVisibility(View.VISIBLE);
+            }
+        });
     }
 }

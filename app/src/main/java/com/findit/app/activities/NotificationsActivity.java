@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.findit.app.R;
 import com.findit.app.adapters.NotificationAdapter;
-import com.findit.app.database.FindItDatabaseHelper;
+import com.findit.app.database.FirestoreHelper;
 import com.findit.app.models.NotificationItem;
 import com.findit.app.utils.SessionManager;
 
@@ -23,7 +23,7 @@ public class NotificationsActivity extends AppCompatActivity {
     private RecyclerView rvNotifications;
     private TextView tvEmptyNotifs;
 
-    private FindItDatabaseHelper dbHelper;
+    private FirestoreHelper dbHelper;
     private SessionManager sessionManager;
     private NotificationAdapter adapter;
 
@@ -32,7 +32,7 @@ public class NotificationsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notifications);
 
-        dbHelper = new FindItDatabaseHelper(this);
+        dbHelper = new FirestoreHelper();
         sessionManager = new SessionManager(this);
 
         btnBack = findViewById(R.id.btnBack);
@@ -47,17 +47,27 @@ public class NotificationsActivity extends AppCompatActivity {
     }
 
     private void loadNotifications() {
-        List<NotificationItem> list = dbHelper.getUserNotifications(sessionManager.getUserId());
+        dbHelper.getUserNotifications(sessionManager.getUserId(),
+                new FirestoreHelper.Callback<List<NotificationItem>>() {
+                    @Override
+                    public void onSuccess(List<NotificationItem> list) {
+                        if (list.isEmpty()) {
+                            tvEmptyNotifs.setVisibility(View.VISIBLE);
+                            rvNotifications.setVisibility(View.GONE);
+                        } else {
+                            tvEmptyNotifs.setVisibility(View.GONE);
+                            rvNotifications.setVisibility(View.VISIBLE);
 
-        if (list.isEmpty()) {
-            tvEmptyNotifs.setVisibility(View.VISIBLE);
-            rvNotifications.setVisibility(View.GONE);
-        } else {
-            tvEmptyNotifs.setVisibility(View.GONE);
-            rvNotifications.setVisibility(View.VISIBLE);
+                            adapter = new NotificationAdapter(NotificationsActivity.this, list);
+                            rvNotifications.setAdapter(adapter);
+                        }
+                    }
 
-            adapter = new NotificationAdapter(this, list);
-            rvNotifications.setAdapter(adapter);
-        }
+                    @Override
+                    public void onFailure(Exception e) {
+                        tvEmptyNotifs.setText("Failed to load notifications");
+                        tvEmptyNotifs.setVisibility(View.VISIBLE);
+                    }
+                });
     }
 }

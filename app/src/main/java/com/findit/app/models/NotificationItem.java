@@ -1,17 +1,19 @@
 package com.findit.app.models;
 
 public class NotificationItem {
-    private int id;
-    private int userId;
+    private String id;
+    private String userId;
     private String title;
     private String message;
     private String type; // "CLAIM_APPROVED", "CLAIM_REJECTED", "ITEM_RECOVERED", "MATCH_ALERT"
     private boolean isRead;
     private String createdAt;
 
-    public NotificationItem() {}
+    public NotificationItem() {
+    }
 
-    public NotificationItem(int id, int userId, String title, String message, String type, boolean isRead, String createdAt) {
+    public NotificationItem(String id, String userId, String title, String message, String type, boolean isRead,
+            String createdAt) {
         this.id = id;
         this.userId = userId;
         this.title = title;
@@ -21,24 +23,59 @@ public class NotificationItem {
         this.createdAt = createdAt;
     }
 
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
+    public String getId() {
+        return id;
+    }
 
-    public int getUserId() { return userId; }
-    public void setUserId(int userId) { this.userId = userId; }
+    public void setId(String id) {
+        this.id = id;
+    }
 
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
+    public String getUserId() {
+        return userId;
+    }
 
-    public String getMessage() { return message; }
-    public void setMessage(String message) { this.message = message; }
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
 
-    public String getType() { return type; }
-    public void setType(String type) { this.type = type; }
+    public String getTitle() {
+        return title;
+    }
 
-    public boolean isRead() { return isRead; }
-    public void setRead(boolean read) { isRead = read; }
+    public void setTitle(String title) {
+        this.title = title;
+    }
 
-    public String getCreatedAt() { return createdAt; }
-    public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public boolean isRead() {
+        return isRead;
+    }
+
+    public void setRead(boolean read) {
+        isRead = read;
+    }
+
+    public String getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
+    }
 }

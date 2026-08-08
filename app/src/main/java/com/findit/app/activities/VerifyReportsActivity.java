@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.findit.app.R;
 import com.findit.app.adapters.ItemAdapter;
-import com.findit.app.database.FindItDatabaseHelper;
+import com.findit.app.database.FirestoreHelper;
 import com.findit.app.models.Item;
 
 import java.util.List;
@@ -23,7 +23,7 @@ public class VerifyReportsActivity extends AppCompatActivity {
     private RecyclerView rvReports;
     private TextView tvEmptyReports;
 
-    private FindItDatabaseHelper dbHelper;
+    private FirestoreHelper dbHelper;
     private ItemAdapter adapter;
 
     @Override
@@ -31,7 +31,7 @@ public class VerifyReportsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_verify_reports);
 
-        dbHelper = new FindItDatabaseHelper(this);
+        dbHelper = new FirestoreHelper();
 
         btnBack = findViewById(R.id.btnBack);
         rvReports = findViewById(R.id.rvReports);
@@ -46,30 +46,52 @@ public class VerifyReportsActivity extends AppCompatActivity {
 
     private void loadReports() {
         // Load all active items for moderation / verification
-        List<Item> items = dbHelper.searchAndFilterItems("", "All", "", "", "ALL", "ALL", "Newest");
+        dbHelper.searchAndFilterItems("", "All", "", "", "ALL", "ALL", "Newest",
+                new FirestoreHelper.Callback<List<Item>>() {
+                    @Override
+                    public void onSuccess(List<Item> items) {
+                        if (items.isEmpty()) {
+                            tvEmptyReports.setVisibility(View.VISIBLE);
+                            rvReports.setVisibility(View.GONE);
+                        } else {
+                            tvEmptyReports.setVisibility(View.GONE);
+                            rvReports.setVisibility(View.VISIBLE);
 
-        if (items.isEmpty()) {
-            tvEmptyReports.setVisibility(View.VISIBLE);
-            rvReports.setVisibility(View.GONE);
-        } else {
-            tvEmptyReports.setVisibility(View.GONE);
-            rvReports.setVisibility(View.VISIBLE);
+                            adapter = new ItemAdapter(VerifyReportsActivity.this, items, item -> {
+                                // Click action
+                            });
 
-            adapter = new ItemAdapter(this, items, item -> {
-                // Click action
-            });
+                            adapter.setActionListener("Remove Fraudulent Report", item -> {
+                                dbHelper.deleteItem(item.getId(), new FirestoreHelper.Callback<Boolean>() {
+                                    @Override
+                                    public void onSuccess(Boolean deleted) {
+                                        if (deleted) {
+                                            Toast.makeText(VerifyReportsActivity.this, "Fraudulent report removed!",
+                                                    Toast.LENGTH_SHORT).show();
+                                            loadReports();
+                                        } else {
+                                            Toast.makeText(VerifyReportsActivity.this, "Failed to remove report.",
+                                                    Toast.LENGTH_SHORT).show();
+                                        }
+                                    }
 
-            adapter.setActionListener("Remove Fraudulent Report", item -> {
-                boolean deleted = dbHelper.deleteItem(item.getId());
-                if (deleted) {
-                    Toast.makeText(this, "Fraudulent report removed!", Toast.LENGTH_SHORT).show();
-                    loadReports();
-                } else {
-                    Toast.makeText(this, "Failed to remove report.", Toast.LENGTH_SHORT).show();
-                }
-            });
+                                    @Override
+                                    public void onFailure(Exception e) {
+                                        Toast.makeText(VerifyReportsActivity.this, "Error: " + e.getMessage(),
+                                                Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                            });
 
-            rvReports.setAdapter(adapter);
-        }
+                            rvReports.setAdapter(adapter);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        tvEmptyReports.setText("Failed to load reports");
+                        tvEmptyReports.setVisibility(View.VISIBLE);
+                    }
+                });
     }
 }

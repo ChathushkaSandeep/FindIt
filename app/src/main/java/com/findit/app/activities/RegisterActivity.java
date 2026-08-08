@@ -9,7 +9,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.findit.app.R;
-import com.findit.app.database.FindItDatabaseHelper;
+import com.findit.app.database.FirestoreHelper;
 import com.findit.app.models.User;
 
 public class RegisterActivity extends AppCompatActivity {
@@ -17,14 +17,14 @@ public class RegisterActivity extends AppCompatActivity {
     private EditText etFullName, etEmail, etPhone, etPassword;
     private Button btnRegister;
     private TextView btnLoginRedirect;
-    private FindItDatabaseHelper dbHelper;
+    private FirestoreHelper dbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
-        dbHelper = new FindItDatabaseHelper(this);
+        dbHelper = new FirestoreHelper();
 
         etFullName = findViewById(R.id.etFullName);
         etEmail = findViewById(R.id.etEmail);
@@ -55,12 +55,27 @@ public class RegisterActivity extends AppCompatActivity {
         user.setPassword(password);
         user.setRole("USER");
 
-        long id = dbHelper.registerUser(user);
-        if (id > 0) {
-            Toast.makeText(this, "Registration Successful! Please Sign In.", Toast.LENGTH_LONG).show();
-            finish();
-        } else {
-            Toast.makeText(this, "Registration Failed. Email may already be in use.", Toast.LENGTH_SHORT).show();
-        }
+        btnRegister.setEnabled(false);
+        Toast.makeText(this, "Registering...", Toast.LENGTH_SHORT).show();
+
+        dbHelper.registerUser(user, new FirestoreHelper.Callback<String>() {
+            @Override
+            public void onSuccess(String id) {
+                btnRegister.setEnabled(true);
+                if (id != null) {
+                    Toast.makeText(RegisterActivity.this, "Registration Successful! Please Sign In.", Toast.LENGTH_LONG)
+                            .show();
+                    finish();
+                } else {
+                    Toast.makeText(RegisterActivity.this, "Registration Failed.", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                btnRegister.setEnabled(true);
+                Toast.makeText(RegisterActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

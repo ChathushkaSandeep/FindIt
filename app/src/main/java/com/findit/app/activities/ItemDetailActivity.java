@@ -11,8 +11,10 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.findit.app.R;
-import com.findit.app.database.FindItDatabaseHelper;
+import com.findit.app.database.FirestoreHelper;
 import com.findit.app.models.Item;
 import com.findit.app.utils.SessionManager;
 
@@ -23,20 +25,20 @@ public class ItemDetailActivity extends AppCompatActivity {
     private TextView tvDetailLocation, tvDetailDate, tvDetailReporter, tvDetailDescription;
     private Button btnSubmitClaim, btnContactReporter;
 
-    private FindItDatabaseHelper dbHelper;
+    private FirestoreHelper dbHelper;
     private SessionManager sessionManager;
     private Item currentItem;
-    private int itemId;
+    private String itemId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_item_detail);
 
-        dbHelper = new FindItDatabaseHelper(this);
+        dbHelper = new FirestoreHelper();
         sessionManager = new SessionManager(this);
 
-        itemId = getIntent().getIntExtra("ITEM_ID", -1);
+        itemId = getIntent().getStringExtra("ITEM_ID");
 
         btnBack = findViewById(R.id.btnBack);
         ivDetailImage = findViewById(R.id.ivDetailImage);
@@ -58,66 +60,79 @@ public class ItemDetailActivity extends AppCompatActivity {
     }
 
     private void loadItemDetails() {
-        if (itemId == -1) {
+        if (itemId == null) {
             Toast.makeText(this, "Invalid Item", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
 
-        currentItem = dbHelper.getItemById(itemId);
-        if (currentItem == null) {
-            Toast.makeText(this, "Item not found", Toast.LENGTH_SHORT).show();
-            finish();
-            return;
-        }
+        dbHelper.getItemById(itemId, new FirestoreHelper.Callback<Item>() {
+            @Override
+            public void onSuccess(Item item) {
+                currentItem = item;
+                if (currentItem == null) {
+                    Toast.makeText(ItemDetailActivity.this, "Item not found", Toast.LENGTH_SHORT).show();
+                    finish();
+                    return;
+                }
 
-        tvDetailTitle.setText(currentItem.getTitle());
-        tvDetailCategory.setText(currentItem.getCategory());
-        tvDetailLocation.setText(currentItem.getLocation());
-        tvDetailDate.setText(currentItem.getDate());
-        tvDetailDescription.setText(currentItem.getDescription());
+                tvDetailTitle.setText(currentItem.getTitle());
+                tvDetailCategory.setText(currentItem.getCategory());
+                tvDetailLocation.setText(currentItem.getLocation());
+                tvDetailDate.setText(currentItem.getDate());
+                tvDetailDescription.setText(currentItem.getDescription());
 
-        String reporterText = (currentItem.getUserName() != null ? currentItem.getUserName() : "User #" + currentItem.getUserId())
-                + (currentItem.getUserPhone() != null && !currentItem.getUserPhone().isEmpty() ? " (" + currentItem.getUserPhone() + ")" : "");
-        tvDetailReporter.setText(reporterText);
+                String reporterText = (currentItem.getUserName() != null ? currentItem.getUserName()
+                        : "User #" + currentItem.getUserId())
+                        + (currentItem.getUserPhone() != null && !currentItem.getUserPhone().isEmpty()
+                                ? " (" + currentItem.getUserPhone() + ")"
+                                : "");
+                tvDetailReporter.setText(reporterText);
 
-        tvDetailTypeBadge.setText(currentItem.getType());
-        tvDetailStatus.setText(currentItem.getStatus());
+                tvDetailTypeBadge.setText(currentItem.getType());
+                tvDetailStatus.setText(currentItem.getStatus());
 
-        if (currentItem.getImageUri() != null && !currentItem.getImageUri().isEmpty()) {
-            try {
-                ivDetailImage.setImageURI(Uri.parse(currentItem.getImageUri()));
-                ivDetailImage.setVisibility(View.VISIBLE);
-                ivDetailPlaceholder.setVisibility(View.GONE);
-            } catch (Exception e) {
-                ivDetailImage.setVisibility(View.GONE);
-                ivDetailPlaceholder.setVisibility(View.VISIBLE);
+                if (currentItem.getImageUri() != null && !currentItem.getImageUri().isEmpty()) {
+                    ivDetailImage.setVisibility(View.VISIBLE);
+                    ivDetailPlaceholder.setVisibility(View.GONE);
+                    Glide.with(ItemDetailActivity.this)
+                            .load(currentItem.getImageUri())
+                            .diskCacheStrategy(DiskCacheStrategy.ALL)
+                            .into(ivDetailImage);
+                } else {
+                    ivDetailImage.setVisibility(View.GONE);
+                    ivDetailPlaceholder.setVisibility(View.VISIBLE);
+                }
+
+                if ("FOUND".equalsIgnoreCase(currentItem.getType())
+                        && !currentItem.getUserId().equals(sessionManager.getUserId())) {
+                    btnSubmitClaim.setVisibility(View.VISIBLE);
+                    btnSubmitClaim.setOnClickListener(v -> {
+                        Intent intent = new Intent(ItemDetailActivity.this, SubmitClaimActivity.class);
+                        intent.putExtra("ITEM_ID", currentItem.getId());
+                        intent.putExtra("ITEM_TITLE", currentItem.getTitle());
+                        startActivity(intent);
+                    });
+                } else {
+                    btnSubmitClaim.setVisibility(View.GONE);
+                }
+
+                btnContactReporter.setOnClickListener(v -> {
+                    if (currentItem.getUserPhone() != null && !currentItem.getUserPhone().isEmpty()) {
+                        Intent dialIntent = new Intent(Intent.ACTION_DIAL,
+                                Uri.parse("tel:" + currentItem.getUserPhone()));
+                        startActivity(dialIntent);
+                    } else {
+                        Toast.makeText(ItemDetailActivity.this, "Phone number not available.", Toast.LENGTH_SHORT)
+                                .show();
+                    }
+                });
             }
-        } else {
-            ivDetailImage.setVisibility(View.GONE);
-            ivDetailPlaceholder.setVisibility(View.VISIBLE);
-        }
 
-        // Show claim button only for FOUND items when current user is not the reporter
-        if ("FOUND".equalsIgnoreCase(currentItem.getType()) && currentItem.getUserId() != sessionManager.getUserId()) {
-            btnSubmitClaim.setVisibility(View.VISIBLE);
-            btnSubmitClaim.setOnClickListener(v -> {
-                Intent intent = new Intent(ItemDetailActivity.this, SubmitClaimActivity.class);
-                intent.putExtra("ITEM_ID", currentItem.getId());
-                intent.putExtra("ITEM_TITLE", currentItem.getTitle());
-                startActivity(intent);
-            });
-        } else {
-            btnSubmitClaim.setVisibility(View.GONE);
-        }
-
-        // Contact Reporter action (Dialer Intent)
-        btnContactReporter.setOnClickListener(v -> {
-            if (currentItem.getUserPhone() != null && !currentItem.getUserPhone().isEmpty()) {
-                Intent dialIntent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + currentItem.getUserPhone()));
-                startActivity(dialIntent);
-            } else {
-                Toast.makeText(this, "Phone number not available.", Toast.LENGTH_SHORT).show();
+            @Override
+            public void onFailure(Exception e) {
+                Toast.makeText(ItemDetailActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                finish();
             }
         });
     }

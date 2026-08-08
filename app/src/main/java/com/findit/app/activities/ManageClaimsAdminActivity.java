@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.findit.app.R;
 import com.findit.app.adapters.ClaimAdapter;
-import com.findit.app.database.FindItDatabaseHelper;
+import com.findit.app.database.FirestoreHelper;
 import com.findit.app.models.Claim;
 
 import java.util.List;
@@ -25,7 +25,7 @@ public class ManageClaimsAdminActivity extends AppCompatActivity {
     private RecyclerView rvAdminClaims;
     private TextView tvEmptyAdminClaims;
 
-    private FindItDatabaseHelper dbHelper;
+    private FirestoreHelper dbHelper;
     private ClaimAdapter adapter;
 
     @Override
@@ -33,7 +33,7 @@ public class ManageClaimsAdminActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_manage_claims_admin);
 
-        dbHelper = new FindItDatabaseHelper(this);
+        dbHelper = new FirestoreHelper();
 
         btnBack = findViewById(R.id.btnBack);
         rvAdminClaims = findViewById(R.id.rvAdminClaims);
@@ -47,30 +47,62 @@ public class ManageClaimsAdminActivity extends AppCompatActivity {
     }
 
     private void loadClaims() {
-        List<Claim> allClaims = dbHelper.getAllClaims();
+        dbHelper.getAllClaims(new FirestoreHelper.Callback<List<Claim>>() {
+            @Override
+            public void onSuccess(List<Claim> allClaims) {
+                if (allClaims.isEmpty()) {
+                    tvEmptyAdminClaims.setVisibility(View.VISIBLE);
+                    rvAdminClaims.setVisibility(View.GONE);
+                } else {
+                    tvEmptyAdminClaims.setVisibility(View.GONE);
+                    rvAdminClaims.setVisibility(View.VISIBLE);
 
-        if (allClaims.isEmpty()) {
-            tvEmptyAdminClaims.setVisibility(View.VISIBLE);
-            rvAdminClaims.setVisibility(View.GONE);
-        } else {
-            tvEmptyAdminClaims.setVisibility(View.GONE);
-            rvAdminClaims.setVisibility(View.VISIBLE);
+                    adapter = new ClaimAdapter(ManageClaimsAdminActivity.this, allClaims, true);
+                    adapter.setActionListener(new ClaimAdapter.OnClaimActionListener() {
+                        @Override
+                        public void onApprove(Claim claim) {
+                            showAdminNoteDialog(claim, "APPROVED");
+                        }
 
-            adapter = new ClaimAdapter(this, allClaims, true);
-            adapter.setActionListener(new ClaimAdapter.OnClaimActionListener() {
-                @Override
-                public void onApprove(Claim claim) {
-                    showAdminNoteDialog(claim, "APPROVED");
+                        @Override
+                        public void onReject(Claim claim) {
+                            showAdminNoteDialog(claim, "REJECTED");
+                        }
+
+                        @Override
+                        public void onRecover(Claim claim) {
+                            dbHelper.markItemAsRecovered(claim.getItemId(), new FirestoreHelper.Callback<Boolean>() {
+                                @Override
+                                public void onSuccess(Boolean success) {
+                                    if (success) {
+                                        Toast.makeText(ManageClaimsAdminActivity.this, "Item marked as RECOVERED!",
+                                                Toast.LENGTH_SHORT).show();
+                                        loadClaims();
+                                    } else {
+                                        Toast.makeText(ManageClaimsAdminActivity.this,
+                                                "Failed to mark item as recovered.", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+
+                                @Override
+                                public void onFailure(Exception e) {
+                                    Toast.makeText(ManageClaimsAdminActivity.this, "Error: " + e.getMessage(),
+                                            Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        }
+                    });
+
+                    rvAdminClaims.setAdapter(adapter);
                 }
+            }
 
-                @Override
-                public void onReject(Claim claim) {
-                    showAdminNoteDialog(claim, "REJECTED");
-                }
-            });
-
-            rvAdminClaims.setAdapter(adapter);
-        }
+            @Override
+            public void onFailure(Exception e) {
+                tvEmptyAdminClaims.setText("Failed to load claims");
+                tvEmptyAdminClaims.setVisibility(View.VISIBLE);
+            }
+        });
     }
 
     private void showAdminNoteDialog(Claim claim, String newStatus) {
@@ -84,13 +116,25 @@ public class ManageClaimsAdminActivity extends AppCompatActivity {
 
         builder.setPositiveButton("Confirm " + newStatus, (dialog, which) -> {
             String notes = etInput.getText().toString().trim();
-            boolean success = dbHelper.updateClaimStatus(claim.getId(), newStatus, notes);
-            if (success) {
-                Toast.makeText(ManageClaimsAdminActivity.this, "Claim marked as " + newStatus, Toast.LENGTH_SHORT).show();
-                loadClaims();
-            } else {
-                Toast.makeText(ManageClaimsAdminActivity.this, "Failed to update claim status.", Toast.LENGTH_SHORT).show();
-            }
+            dbHelper.updateClaimStatus(claim.getId(), newStatus, notes, new FirestoreHelper.Callback<Boolean>() {
+                @Override
+                public void onSuccess(Boolean success) {
+                    if (success) {
+                        Toast.makeText(ManageClaimsAdminActivity.this, "Claim marked as " + newStatus,
+                                Toast.LENGTH_SHORT).show();
+                        loadClaims();
+                    } else {
+                        Toast.makeText(ManageClaimsAdminActivity.this, "Failed to update claim status.",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    Toast.makeText(ManageClaimsAdminActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT)
+                            .show();
+                }
+            });
         });
 
         builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());

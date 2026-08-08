@@ -9,7 +9,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.findit.app.R;
-import com.findit.app.database.FindItDatabaseHelper;
+import com.findit.app.database.FirestoreHelper;
 
 public class AdminReportsActivity extends AppCompatActivity {
 
@@ -17,14 +17,14 @@ public class AdminReportsActivity extends AppCompatActivity {
     private TextView tvReportUsers, tvReportLost, tvReportFound, tvReportRecovered, tvReportPendingClaims;
     private Button btnExportReport;
 
-    private FindItDatabaseHelper dbHelper;
+    private FirestoreHelper dbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_admin_reports);
 
-        dbHelper = new FindItDatabaseHelper(this);
+        dbHelper = new FirestoreHelper();
 
         btnBack = findViewById(R.id.btnBack);
         tvReportUsers = findViewById(R.id.tvReportUsers);
@@ -44,10 +44,55 @@ public class AdminReportsActivity extends AppCompatActivity {
     }
 
     private void loadReportData() {
-        tvReportUsers.setText(String.valueOf(dbHelper.getTotalUsers()));
-        tvReportLost.setText(String.valueOf(dbHelper.getTotalLostItems()));
-        tvReportFound.setText(String.valueOf(dbHelper.getTotalFoundItems()));
-        tvReportRecovered.setText(String.valueOf(dbHelper.getRecoveredItemsCount()));
-        tvReportPendingClaims.setText(String.valueOf(dbHelper.getPendingClaimsCount()));
+        dbHelper.getTotalUsers(new FirestoreHelper.Callback<Integer>() {
+            @Override
+            public void onSuccess(Integer count) {
+                tvReportUsers.setText(String.valueOf(count));
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+            }
+        });
+        dbHelper.getTotalLostItems(new FirestoreHelper.Callback<Integer>() {
+            @Override
+            public void onSuccess(Integer count) {
+                tvReportLost.setText(String.valueOf(count));
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+            }
+        });
+        dbHelper.getTotalFoundItems(new FirestoreHelper.Callback<Integer>() {
+            @Override
+            public void onSuccess(Integer count) {
+                tvReportFound.setText(String.valueOf(count));
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+            }
+        });
+        dbHelper.getRecoveredItemsCount(new FirestoreHelper.Callback<Integer>() {
+            @Override
+            public void onSuccess(Integer count) {
+                tvReportRecovered.setText(String.valueOf(count));
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+            }
+        });
+        dbHelper.getPendingClaimsCount(new FirestoreHelper.Callback<Integer>() {
+            @Override
+            public void onSuccess(Integer count) {
+                tvReportPendingClaims.setText(String.valueOf(count));
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+            }
+        });
     }
 }

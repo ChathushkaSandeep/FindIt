@@ -17,7 +17,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.findit.app.R;
 import com.findit.app.activities.ItemDetailActivity;
 import com.findit.app.adapters.ItemAdapter;
-import com.findit.app.database.FindItDatabaseHelper;
+import com.findit.app.database.FirestoreHelper;
 import com.findit.app.models.Item;
 
 import java.util.List;
@@ -28,15 +28,16 @@ public class LostItemsFragment extends Fragment {
     private RecyclerView rvItems;
     private TextView tvEmptyState;
 
-    private FindItDatabaseHelper dbHelper;
+    private FirestoreHelper dbHelper;
     private ItemAdapter adapter;
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_item_list, container, false);
 
-        dbHelper = new FindItDatabaseHelper(requireContext());
+        dbHelper = new FirestoreHelper();
 
         swipeRefresh = view.findViewById(R.id.swipeRefresh);
         rvItems = view.findViewById(R.id.rvItems);
@@ -58,24 +59,34 @@ public class LostItemsFragment extends Fragment {
     }
 
     private void loadLostItems() {
-        List<Item> lostItems = dbHelper.getItemsByType("LOST");
+        swipeRefresh.setRefreshing(true);
+        dbHelper.getItemsByType("LOST", new FirestoreHelper.Callback<List<Item>>() {
+            @Override
+            public void onSuccess(List<Item> lostItems) {
+                if (lostItems.isEmpty()) {
+                    tvEmptyState.setText("No lost item reports currently available.");
+                    tvEmptyState.setVisibility(View.VISIBLE);
+                    rvItems.setVisibility(View.GONE);
+                } else {
+                    tvEmptyState.setVisibility(View.GONE);
+                    rvItems.setVisibility(View.VISIBLE);
 
-        if (lostItems.isEmpty()) {
-            tvEmptyState.setText("No lost item reports currently available.");
-            tvEmptyState.setVisibility(View.VISIBLE);
-            rvItems.setVisibility(View.GONE);
-        } else {
-            tvEmptyState.setVisibility(View.GONE);
-            rvItems.setVisibility(View.VISIBLE);
+                    adapter = new ItemAdapter(requireContext(), lostItems, item -> {
+                        Intent intent = new Intent(requireContext(), ItemDetailActivity.class);
+                        intent.putExtra("ITEM_ID", item.getId());
+                        startActivity(intent);
+                    });
+                    rvItems.setAdapter(adapter);
+                }
+                swipeRefresh.setRefreshing(false);
+            }
 
-            adapter = new ItemAdapter(requireContext(), lostItems, item -> {
-                Intent intent = new Intent(requireContext(), ItemDetailActivity.class);
-                intent.putExtra("ITEM_ID", item.getId());
-                startActivity(intent);
-            });
-            rvItems.setAdapter(adapter);
-        }
-
-        swipeRefresh.setRefreshing(false);
+            @Override
+            public void onFailure(Exception e) {
+                swipeRefresh.setRefreshing(false);
+                tvEmptyState.setText("Error loading items.");
+                tvEmptyState.setVisibility(View.VISIBLE);
+            }
+        });
     }
 }

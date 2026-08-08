@@ -21,8 +21,9 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.findit.app.R;
-import com.findit.app.database.FindItDatabaseHelper;
+import com.findit.app.database.FirestoreHelper;
 import com.findit.app.models.Item;
+import com.findit.app.utils.CloudinaryHelper;
 import com.findit.app.utils.SessionManager;
 
 import java.text.SimpleDateFormat;
@@ -40,7 +41,7 @@ public class ReportItemActivity extends AppCompatActivity {
     private Button btnSubmitReport;
     private TextView tvReportTitle;
 
-    private FindItDatabaseHelper dbHelper;
+    private FirestoreHelper dbHelper;
     private SessionManager sessionManager;
     private String selectedImageUri = "";
     private Calendar calendar = Calendar.getInstance();
@@ -67,15 +68,14 @@ public class ReportItemActivity extends AppCompatActivity {
                         layoutUploadPlaceholder.setVisibility(View.GONE);
                     }
                 }
-            }
-    );
+            });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_report_item);
 
-        dbHelper = new FindItDatabaseHelper(this);
+        dbHelper = new FirestoreHelper();
         sessionManager = new SessionManager(this);
 
         btnBack = findViewById(R.id.btnBack);
@@ -113,7 +113,8 @@ public class ReportItemActivity extends AppCompatActivity {
         });
 
         // Setup Category Spinner
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, categories);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item,
+                categories);
         spCategory.setAdapter(adapter);
 
         // Setup Date Picker
@@ -141,8 +142,7 @@ public class ReportItemActivity extends AppCompatActivity {
                 },
                 calendar.get(Calendar.YEAR),
                 calendar.get(Calendar.MONTH),
-                calendar.get(Calendar.DAY_OF_MONTH)
-        );
+                calendar.get(Calendar.DAY_OF_MONTH));
         datePickerDialog.show();
     }
 
@@ -159,6 +159,32 @@ public class ReportItemActivity extends AppCompatActivity {
             return;
         }
 
+        btnSubmitReport.setEnabled(false);
+        Toast.makeText(this, "Submitting report...", Toast.LENGTH_SHORT).show();
+
+        if (!selectedImageUri.isEmpty()) {
+            Toast.makeText(this, "Uploading image...", Toast.LENGTH_SHORT).show();
+            CloudinaryHelper.uploadImage(this, Uri.parse(selectedImageUri),
+                    new CloudinaryHelper.UploadCallbackListener() {
+                        @Override
+                        public void onSuccess(String imageUrl) {
+                            saveItemToFirestore(title, category, location, date, description, type, imageUrl);
+                        }
+
+                        @Override
+                        public void onError(String error) {
+                            btnSubmitReport.setEnabled(true);
+                            Toast.makeText(ReportItemActivity.this, "Image upload failed: " + error, Toast.LENGTH_SHORT)
+                                    .show();
+                        }
+                    });
+        } else {
+            saveItemToFirestore(title, category, location, date, description, type, "");
+        }
+    }
+
+    private void saveItemToFirestore(String title, String category, String location, String date, String description,
+            String type, String imageUrl) {
         Item item = new Item();
         item.setUserId(sessionManager.getUserId());
         item.setTitle(title);
@@ -168,14 +194,27 @@ public class ReportItemActivity extends AppCompatActivity {
         item.setDescription(description);
         item.setType(type);
         item.setStatus("VERIFIED"); // Verified & active
-        item.setImageUri(selectedImageUri);
+        item.setImageUri(imageUrl);
 
-        long id = dbHelper.insertItem(item);
-        if (id > 0) {
-            Toast.makeText(this, type + " item reported successfully!", Toast.LENGTH_LONG).show();
-            finish();
-        } else {
-            Toast.makeText(this, "Failed to submit report. Please try again.", Toast.LENGTH_SHORT).show();
-        }
+        dbHelper.insertItem(item, new FirestoreHelper.Callback<String>() {
+            @Override
+            public void onSuccess(String id) {
+                btnSubmitReport.setEnabled(true);
+                if (id != null) {
+                    Toast.makeText(ReportItemActivity.this, type + " item reported successfully!", Toast.LENGTH_LONG)
+                            .show();
+                    finish();
+                } else {
+                    Toast.makeText(ReportItemActivity.this, "Failed to submit report. Please try again.",
+                            Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                btnSubmitReport.setEnabled(true);
+                Toast.makeText(ReportItemActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

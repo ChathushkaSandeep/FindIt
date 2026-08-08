@@ -23,7 +23,7 @@ public class SessionManager {
 
     public void createLoginSession(User user) {
         editor.putBoolean(KEY_IS_LOGGED_IN, true);
-        editor.putInt(KEY_USER_ID, user.getId());
+        editor.putString(KEY_USER_ID, user.getId());
         editor.putString(KEY_FULL_NAME, user.getFullName());
         editor.putString(KEY_EMAIL, user.getEmail());
         editor.putString(KEY_PHONE, user.getPhone());
@@ -42,8 +42,8 @@ public class SessionManager {
         return pref.getBoolean(KEY_IS_LOGGED_IN, false);
     }
 
-    public int getUserId() {
-        return pref.getInt(KEY_USER_ID, -1);
+    public String getUserId() {
+        return pref.getString(KEY_USER_ID, null);
     }
 
     public String getFullName() {

@@ -16,8 +16,9 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.findit.app.R;
-import com.findit.app.database.FindItDatabaseHelper;
+import com.findit.app.database.FirestoreHelper;
 import com.findit.app.models.Claim;
+import com.findit.app.utils.CloudinaryHelper;
 import com.findit.app.utils.SessionManager;
 
 public class SubmitClaimActivity extends AppCompatActivity {
@@ -28,9 +29,9 @@ public class SubmitClaimActivity extends AppCompatActivity {
     private View layoutUploadProofPlaceholder;
     private Button btnSubmitClaim;
 
-    private FindItDatabaseHelper dbHelper;
+    private FirestoreHelper dbHelper;
     private SessionManager sessionManager;
-    private int itemId;
+    private String itemId;
     private String itemTitle;
     private String proofImageUri = "";
 
@@ -46,18 +47,17 @@ public class SubmitClaimActivity extends AppCompatActivity {
                         layoutUploadProofPlaceholder.setVisibility(View.GONE);
                     }
                 }
-            }
-    );
+            });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_submit_claim);
 
-        dbHelper = new FindItDatabaseHelper(this);
+        dbHelper = new FirestoreHelper();
         sessionManager = new SessionManager(this);
 
-        itemId = getIntent().getIntExtra("ITEM_ID", -1);
+        itemId = getIntent().getStringExtra("ITEM_ID");
         itemTitle = getIntent().getStringExtra("ITEM_TITLE");
 
         btnBack = findViewById(R.id.btnBack);
@@ -91,19 +91,55 @@ public class SubmitClaimActivity extends AppCompatActivity {
             return;
         }
 
+        btnSubmitClaim.setEnabled(false);
+        Toast.makeText(this, "Submitting claim...", Toast.LENGTH_SHORT).show();
+
+        if (!proofImageUri.isEmpty()) {
+            Toast.makeText(this, "Uploading proof image...", Toast.LENGTH_SHORT).show();
+            CloudinaryHelper.uploadImage(this, Uri.parse(proofImageUri), new CloudinaryHelper.UploadCallbackListener() {
+                @Override
+                public void onSuccess(String imageUrl) {
+                    saveClaimToFirestore(proofText, imageUrl);
+                }
+
+                @Override
+                public void onError(String error) {
+                    btnSubmitClaim.setEnabled(true);
+                    Toast.makeText(SubmitClaimActivity.this, "Image upload failed: " + error, Toast.LENGTH_SHORT)
+                            .show();
+                }
+            });
+        } else {
+            saveClaimToFirestore(proofText, "");
+        }
+    }
+
+    private void saveClaimToFirestore(String proofText, String proofImageUrl) {
         Claim claim = new Claim();
         claim.setItemId(itemId);
         claim.setClaimantId(sessionManager.getUserId());
         claim.setProofDescription(proofText);
-        claim.setProofImageUri(proofImageUri);
+        claim.setProofImageUri(proofImageUrl);
         claim.setStatus("PENDING");
 
-        long id = dbHelper.submitClaim(claim);
-        if (id > 0) {
-            Toast.makeText(this, "Ownership claim submitted! Check status in 'My Claims'.", Toast.LENGTH_LONG).show();
-            finish();
-        } else {
-            Toast.makeText(this, "Failed to submit claim.", Toast.LENGTH_SHORT).show();
-        }
+        dbHelper.submitClaim(claim, new FirestoreHelper.Callback<String>() {
+            @Override
+            public void onSuccess(String id) {
+                btnSubmitClaim.setEnabled(true);
+                if (id != null) {
+                    Toast.makeText(SubmitClaimActivity.this, "Ownership claim submitted! Check status in 'My Claims'.",
+                            Toast.LENGTH_LONG).show();
+                    finish();
+                } else {
+                    Toast.makeText(SubmitClaimActivity.this, "Failed to submit claim.", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                btnSubmitClaim.setEnabled(true);
+                Toast.makeText(SubmitClaimActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

@@ -15,6 +15,9 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+
 import com.findit.app.R;
 import com.findit.app.models.Item;
 
@@ -90,16 +93,14 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
             holder.tvStatusBadge.setTextColor(Color.parseColor("#4338CA"));
         }
 
-        // Image loading
         if (item.getImageUri() != null && !item.getImageUri().isEmpty()) {
-            try {
-                holder.ivThumbnail.setImageURI(Uri.parse(item.getImageUri()));
-                holder.ivThumbnail.setVisibility(View.VISIBLE);
-                holder.ivPlaceholder.setVisibility(View.GONE);
-            } catch (Exception e) {
-                holder.ivThumbnail.setVisibility(View.GONE);
-                holder.ivPlaceholder.setVisibility(View.VISIBLE);
-            }
+            holder.ivThumbnail.setVisibility(View.VISIBLE);
+            holder.ivPlaceholder.setVisibility(View.GONE);
+            Glide.with(context)
+                    .load(item.getImageUri())
+                    .placeholder(R.color.text_input_hint_color)
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .into(holder.ivThumbnail);
         } else {
             holder.ivThumbnail.setVisibility(View.GONE);
             holder.ivPlaceholder.setVisibility(View.VISIBLE);

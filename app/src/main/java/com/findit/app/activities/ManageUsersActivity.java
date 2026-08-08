@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.findit.app.R;
 import com.findit.app.adapters.UserAdapter;
-import com.findit.app.database.FindItDatabaseHelper;
+import com.findit.app.database.FirestoreHelper;
 import com.findit.app.models.User;
 
 import java.util.List;
@@ -19,7 +19,7 @@ public class ManageUsersActivity extends AppCompatActivity {
 
     private ImageView btnBack;
     private RecyclerView rvUsers;
-    private FindItDatabaseHelper dbHelper;
+    private FirestoreHelper dbHelper;
     private UserAdapter adapter;
 
     @Override
@@ -27,7 +27,7 @@ public class ManageUsersActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_manage_users);
 
-        dbHelper = new FindItDatabaseHelper(this);
+        dbHelper = new FirestoreHelper();
 
         btnBack = findViewById(R.id.btnBack);
         rvUsers = findViewById(R.id.rvUsers);
@@ -40,17 +40,40 @@ public class ManageUsersActivity extends AppCompatActivity {
     }
 
     private void loadUsers() {
-        List<User> userList = dbHelper.getAllUsers();
-        adapter = new UserAdapter(this, userList, user -> {
-            String nextStatus = "ACTIVE".equalsIgnoreCase(user.getStatus()) ? "SUSPENDED" : "ACTIVE";
-            boolean success = dbHelper.updateUserStatus(user.getId(), nextStatus);
-            if (success) {
-                Toast.makeText(this, "User " + user.getFullName() + " status updated to " + nextStatus, Toast.LENGTH_SHORT).show();
-                loadUsers();
-            } else {
-                Toast.makeText(this, "Failed to update user status.", Toast.LENGTH_SHORT).show();
+        dbHelper.getAllUsers(new FirestoreHelper.Callback<List<User>>() {
+            @Override
+            public void onSuccess(List<User> userList) {
+                adapter = new UserAdapter(ManageUsersActivity.this, userList, user -> {
+                    String nextStatus = "ACTIVE".equalsIgnoreCase(user.getStatus()) ? "SUSPENDED" : "ACTIVE";
+                    dbHelper.updateUserStatus(user.getId(), nextStatus, new FirestoreHelper.Callback<Boolean>() {
+                        @Override
+                        public void onSuccess(Boolean success) {
+                            if (success) {
+                                Toast.makeText(ManageUsersActivity.this,
+                                        "User " + user.getFullName() + " status updated to " + nextStatus,
+                                        Toast.LENGTH_SHORT).show();
+                                loadUsers();
+                            } else {
+                                Toast.makeText(ManageUsersActivity.this, "Failed to update user status.",
+                                        Toast.LENGTH_SHORT).show();
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Exception e) {
+                            Toast.makeText(ManageUsersActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT)
+                                    .show();
+                        }
+                    });
+                });
+                rvUsers.setAdapter(adapter);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Toast.makeText(ManageUsersActivity.this, "Failed to load users: " + e.getMessage(), Toast.LENGTH_SHORT)
+                        .show();
             }
         });
-        rvUsers.setAdapter(adapter);
     }
 }

@@ -25,3 +25,8 @@ Thumbs.db
 captures/
 .externalNativeBuild/
 .cxx/
+
+# Google Services
+**/google-services.json
+
+google-services.json

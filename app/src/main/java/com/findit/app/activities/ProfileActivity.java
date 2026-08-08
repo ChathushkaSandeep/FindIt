@@ -10,7 +10,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.findit.app.R;
-import com.findit.app.database.FindItDatabaseHelper;
+import com.findit.app.database.FirestoreHelper;
 import com.findit.app.models.User;
 import com.findit.app.utils.SessionManager;
 
@@ -20,7 +20,7 @@ public class ProfileActivity extends AppCompatActivity {
     private EditText etProfileName, etProfileEmail, etProfilePhone, etOldPassword, etNewPassword;
     private Button btnUpdateProfile, btnChangePassword, btnLogout;
 
-    private FindItDatabaseHelper dbHelper;
+    private FirestoreHelper dbHelper;
     private SessionManager sessionManager;
     private User currentUser;
 
@@ -29,7 +29,7 @@ public class ProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
-        dbHelper = new FindItDatabaseHelper(this);
+        dbHelper = new FirestoreHelper();
         sessionManager = new SessionManager(this);
 
         btnBack = findViewById(R.id.btnBack);
@@ -59,12 +59,23 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void loadUserData() {
-        int userId = sessionManager.getUserId();
-        currentUser = dbHelper.getUserById(userId);
-        if (currentUser != null) {
-            etProfileName.setText(currentUser.getFullName());
-            etProfileEmail.setText(currentUser.getEmail());
-            etProfilePhone.setText(currentUser.getPhone());
+        String userId = sessionManager.getUserId();
+        if (userId != null) {
+            dbHelper.getUserById(userId, new FirestoreHelper.Callback<User>() {
+                @Override
+                public void onSuccess(User user) {
+                    currentUser = user;
+                    if (currentUser != null) {
+                        etProfileName.setText(currentUser.getFullName());
+                        etProfileEmail.setText(currentUser.getEmail());
+                        etProfilePhone.setText(currentUser.getPhone());
+                    }
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                }
+            });
         }
     }
 
@@ -78,13 +89,25 @@ public class ProfileActivity extends AppCompatActivity {
             return;
         }
 
-        boolean success = dbHelper.updateProfile(sessionManager.getUserId(), name, email, phone);
-        if (success) {
-            sessionManager.updateUserDetails(name, email, phone);
-            Toast.makeText(this, "Profile updated successfully!", Toast.LENGTH_SHORT).show();
-        } else {
-            Toast.makeText(this, "Failed to update profile.", Toast.LENGTH_SHORT).show();
-        }
+        btnUpdateProfile.setEnabled(false);
+        dbHelper.updateProfile(sessionManager.getUserId(), name, email, phone, new FirestoreHelper.Callback<Boolean>() {
+            @Override
+            public void onSuccess(Boolean success) {
+                btnUpdateProfile.setEnabled(true);
+                if (success) {
+                    sessionManager.updateUserDetails(name, email, phone);
+                    Toast.makeText(ProfileActivity.this, "Profile updated successfully!", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(ProfileActivity.this, "Failed to update profile.", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                btnUpdateProfile.setEnabled(true);
+                Toast.makeText(ProfileActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void handleChangePassword() {
@@ -96,13 +119,25 @@ public class ProfileActivity extends AppCompatActivity {
             return;
         }
 
-        boolean success = dbHelper.changePassword(sessionManager.getUserId(), oldPwd, newPwd);
-        if (success) {
-            Toast.makeText(this, "Password changed successfully!", Toast.LENGTH_SHORT).show();
-            etOldPassword.setText("");
-            etNewPassword.setText("");
-        } else {
-            Toast.makeText(this, "Incorrect current password.", Toast.LENGTH_SHORT).show();
-        }
+        btnChangePassword.setEnabled(false);
+        dbHelper.changePassword(sessionManager.getUserId(), oldPwd, newPwd, new FirestoreHelper.Callback<Boolean>() {
+            @Override
+            public void onSuccess(Boolean success) {
+                btnChangePassword.setEnabled(true);
+                if (success) {
+                    Toast.makeText(ProfileActivity.this, "Password changed successfully!", Toast.LENGTH_SHORT).show();
+                    etOldPassword.setText("");
+                    etNewPassword.setText("");
+                } else {
+                    Toast.makeText(ProfileActivity.this, "Incorrect current password.", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                btnChangePassword.setEnabled(true);
+                Toast.makeText(ProfileActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

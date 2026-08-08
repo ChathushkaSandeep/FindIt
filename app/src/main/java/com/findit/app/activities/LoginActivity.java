@@ -10,7 +10,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.findit.app.R;
-import com.findit.app.database.FindItDatabaseHelper;
+import com.findit.app.database.FirestoreHelper;
 import com.findit.app.models.User;
 import com.findit.app.utils.SessionManager;
 
@@ -19,7 +19,7 @@ public class LoginActivity extends AppCompatActivity {
     private EditText etEmail, etPassword;
     private Button btnLogin;
     private TextView btnRegister;
-    private FindItDatabaseHelper dbHelper;
+    private FirestoreHelper dbHelper;
     private SessionManager sessionManager;
 
     @Override
@@ -27,7 +27,7 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         sessionManager = new SessionManager(this);
-        dbHelper = new FindItDatabaseHelper(this);
+        dbHelper = new FirestoreHelper();
 
         if (sessionManager.isLoggedIn()) {
             navigateToMain();
@@ -56,18 +56,33 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-        User user = dbHelper.checkLogin(email, password);
-        if (user != null) {
-            if ("SUSPENDED".equalsIgnoreCase(user.getStatus())) {
-                Toast.makeText(this, "Account suspended by Admin.", Toast.LENGTH_LONG).show();
-                return;
+        btnLogin.setEnabled(false);
+        Toast.makeText(this, "Logging in...", Toast.LENGTH_SHORT).show();
+
+        dbHelper.checkLogin(email, password, new FirestoreHelper.Callback<User>() {
+            @Override
+            public void onSuccess(User user) {
+                btnLogin.setEnabled(true);
+                if (user != null) {
+                    if ("SUSPENDED".equalsIgnoreCase(user.getStatus())) {
+                        Toast.makeText(LoginActivity.this, "Account suspended by Admin.", Toast.LENGTH_LONG).show();
+                        return;
+                    }
+                    sessionManager.createLoginSession(user);
+                    Toast.makeText(LoginActivity.this, "Welcome " + user.getFullName() + "!", Toast.LENGTH_SHORT)
+                            .show();
+                    navigateToMain();
+                } else {
+                    Toast.makeText(LoginActivity.this, "Invalid credentials", Toast.LENGTH_SHORT).show();
+                }
             }
-            sessionManager.createLoginSession(user);
-            Toast.makeText(this, "Welcome " + user.getFullName() + "!", Toast.LENGTH_SHORT).show();
-            navigateToMain();
-        } else {
-            Toast.makeText(this, "Invalid credentials", Toast.LENGTH_SHORT).show();
-        }
+
+            @Override
+            public void onFailure(Exception e) {
+                btnLogin.setEnabled(true);
+                Toast.makeText(LoginActivity.this, "Login error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void navigateToMain() {

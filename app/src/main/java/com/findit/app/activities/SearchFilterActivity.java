@@ -19,7 +19,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.findit.app.R;
 import com.findit.app.adapters.ItemAdapter;
-import com.findit.app.database.FindItDatabaseHelper;
+import com.findit.app.database.FirestoreHelper;
 import com.findit.app.models.Item;
 
 import java.text.SimpleDateFormat;
@@ -36,11 +36,11 @@ public class SearchFilterActivity extends AppCompatActivity {
     private TextView tvResultCount, tvEmptyState;
     private RecyclerView rvSearchResults;
 
-    private FindItDatabaseHelper dbHelper;
+    private FirestoreHelper dbHelper;
     private ItemAdapter adapter;
     private Calendar calendar = Calendar.getInstance();
 
-    private final String[] typeOptions = {"ALL", "LOST", "FOUND"};
+    private final String[] typeOptions = { "ALL", "LOST", "FOUND" };
     private final String[] categoryOptions = {
             "All",
             "Electronics & Accessories",
@@ -51,14 +51,14 @@ public class SearchFilterActivity extends AppCompatActivity {
             "Books & Stationery",
             "Others"
     };
-    private final String[] sortOptions = {"Newest", "Oldest", "Name A-Z"};
+    private final String[] sortOptions = { "Newest", "Oldest", "Name A-Z" };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search_filter);
 
-        dbHelper = new FindItDatabaseHelper(this);
+        dbHelper = new FirestoreHelper();
 
         btnBack = findViewById(R.id.btnBack);
         etKeyword = findViewById(R.id.etKeyword);
@@ -79,7 +79,8 @@ public class SearchFilterActivity extends AppCompatActivity {
 
         // Spinners Setup
         spTypeFilter.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, typeOptions));
-        spCategoryFilter.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, categoryOptions));
+        spCategoryFilter
+                .setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, categoryOptions));
         spSortBy.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, sortOptions));
 
         // Date Picker for filter
@@ -99,7 +100,8 @@ public class SearchFilterActivity extends AppCompatActivity {
         // Real-time search as user types
         etKeyword.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -107,7 +109,8 @@ public class SearchFilterActivity extends AppCompatActivity {
             }
 
             @Override
-            public void afterTextChanged(Editable s) {}
+            public void afterTextChanged(Editable s) {
+            }
         });
 
         btnApplySearch.setOnClickListener(v -> performSearch());
@@ -124,24 +127,33 @@ public class SearchFilterActivity extends AppCompatActivity {
         String date = etDateFilter.getText().toString().trim();
         String sortBy = spSortBy.getSelectedItem().toString();
 
-        List<Item> results = dbHelper.searchAndFilterItems(keyword, category, location, date, type, "VERIFIED", sortBy);
+        dbHelper.searchAndFilterItems(keyword, category, location, date, type, "VERIFIED", sortBy,
+                new FirestoreHelper.Callback<List<Item>>() {
+                    @Override
+                    public void onSuccess(List<Item> results) {
+                        tvResultCount.setText(results.size() + " Item(s) Found");
 
-        tvResultCount.setText(results.size() + " Item(s) Found");
+                        if (results.isEmpty()) {
+                            tvEmptyState.setVisibility(View.VISIBLE);
+                            rvSearchResults.setVisibility(View.GONE);
+                        } else {
+                            tvEmptyState.setVisibility(View.GONE);
+                            rvSearchResults.setVisibility(View.VISIBLE);
 
-        if (results.isEmpty()) {
-            tvEmptyState.setVisibility(View.VISIBLE);
-            rvSearchResults.setVisibility(View.GONE);
-        } else {
-            tvEmptyState.setVisibility(View.GONE);
-            rvSearchResults.setVisibility(View.VISIBLE);
+                            adapter = new ItemAdapter(SearchFilterActivity.this, results, item -> {
+                                Intent intent = new Intent(SearchFilterActivity.this, ItemDetailActivity.class);
+                                intent.putExtra("ITEM_ID", item.getId());
+                                startActivity(intent);
+                            });
+                            rvSearchResults.setAdapter(adapter);
+                        }
+                    }
 
-            adapter = new ItemAdapter(this, results, item -> {
-                Intent intent = new Intent(SearchFilterActivity.this, ItemDetailActivity.class);
-                intent.putExtra("ITEM_ID", item.getId());
-                startActivity(intent);
-            });
-            rvSearchResults.setAdapter(adapter);
-        }
+                    @Override
+                    public void onFailure(Exception e) {
+                        tvResultCount.setText("Failed to search items");
+                    }
+                });
     }
 
     private void resetFilters() {
