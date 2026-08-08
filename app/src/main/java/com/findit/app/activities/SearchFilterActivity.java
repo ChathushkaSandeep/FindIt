@@ -78,10 +78,17 @@ public class SearchFilterActivity extends AppCompatActivity {
         rvSearchResults.setLayoutManager(new LinearLayoutManager(this));
 
         // Spinners Setup
-        spTypeFilter.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, typeOptions));
-        spCategoryFilter
-                .setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, categoryOptions));
-        spSortBy.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, sortOptions));
+        ArrayAdapter<String> typeAdapter = new ArrayAdapter<>(this, R.layout.spinner_item, typeOptions);
+        typeAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
+        spTypeFilter.setAdapter(typeAdapter);
+
+        ArrayAdapter<String> catAdapter = new ArrayAdapter<>(this, R.layout.spinner_item, categoryOptions);
+        catAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
+        spCategoryFilter.setAdapter(catAdapter);
+
+        ArrayAdapter<String> sortAdapter = new ArrayAdapter<>(this, R.layout.spinner_item, sortOptions);
+        sortAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
+        spSortBy.setAdapter(sortAdapter);
 
         // Date Picker for filter
         etDateFilter.setOnClickListener(v -> {

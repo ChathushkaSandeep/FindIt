@@ -70,10 +70,12 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
         // Type Badge
         if ("LOST".equalsIgnoreCase(item.getType())) {
             holder.tvTypeBadge.setText("LOST");
-            holder.tvTypeBadge.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#EF4444")));
+            holder.tvTypeBadge.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#FEE2E2")));
+            holder.tvTypeBadge.setTextColor(Color.parseColor("#EF4444"));
         } else {
             holder.tvTypeBadge.setText("FOUND");
-            holder.tvTypeBadge.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#2563EB")));
+            holder.tvTypeBadge.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#D1FAE5")));
+            holder.tvTypeBadge.setTextColor(Color.parseColor("#10B981"));
         }
 
         // Status Badge
