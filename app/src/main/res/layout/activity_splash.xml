@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/primary"
+    android:gravity="center"
+    android:orientation="vertical">
+
+    <!-- App Icon -->
+    <ImageView
+        android:id="@+id/ivSplashLogo"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:src="@drawable/ic_launcher"
+        app:tint="@color/white"
+        android:contentDescription="FindIt Logo" />
+
+    <!-- App Name -->
+    <TextView
+        android:id="@+id/tvSplashTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="FindIt"
+        android:textColor="@color/white"
+        android:textSize="42sp"
+        android:textStyle="bold"
+        android:letterSpacing="0.05" />
+
+    <!-- Tagline -->
+    <TextView
+        android:id="@+id/tvSplashTagline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Lost &amp; Found Made Easy"
+        android:textColor="#B3FFFFFF"
+        android:textSize="16sp" />
+
+    <!-- Accent line -->
+    <View
+        android:layout_width="50dp"
+        android:layout_height="3dp"
+        android:layout_marginTop="24dp"
+        android:background="@color/accent"
+        android:alpha="0.9" />
+
+    <!-- Loading dots at the bottom -->
+    <TextView
+        android:id="@+id/tvSplashLoading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="60dp"
+        android:text="Please wait..."
+        android:textColor="#80FFFFFF"
+        android:textSize="13sp" />
+
+</LinearLayout>

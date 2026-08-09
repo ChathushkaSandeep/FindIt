@@ -17,16 +17,24 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.FindIt">
 
-        <!-- Login Activity (Entry Point) -->
+        <!-- Splash Activity (Entry Point) -->
         <activity
-            android:name=".activities.LoginActivity"
+            android:name=".activities.SplashActivity"
             android:exported="true"
-            android:windowSoftInputMode="adjustResize">
+            android:theme="@style/Theme.FindIt.Splash"
+            android:screenOrientation="portrait"
+            android:noHistory="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Login Activity -->
+        <activity
+            android:name=".activities.LoginActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
 
         <activity android:name=".activities.RegisterActivity" android:exported="false" />
         <activity android:name=".activities.MainActivity" android:exported="false" />
