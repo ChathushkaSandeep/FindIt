@@ -8,7 +8,7 @@ public class Claim {
     private String claimantName;
     private String proofDescription;
     private String proofImageUri;
-    private String status; // "PENDING", "APPROVED", "REJECTED"
+    private String status; // PENDING, APPROVED, REJECTED
     private String adminNotes;
     private String createdAt;
 

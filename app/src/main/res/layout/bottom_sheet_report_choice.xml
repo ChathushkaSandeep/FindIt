@@ -30,7 +30,7 @@
         android:orientation="horizontal"
         android:baselineAligned="false">
 
-        <!-- Report Lost Card -->
+
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardReportLost"
             android:layout_width="0dp"
@@ -69,7 +69,7 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Report Found Card -->
+
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardReportFound"
             android:layout_width="0dp"

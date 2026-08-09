@@ -5,7 +5,7 @@ public class NotificationItem {
     private String userId;
     private String title;
     private String message;
-    private String type; // "CLAIM_APPROVED", "CLAIM_REJECTED", "ITEM_RECOVERED", "MATCH_ALERT"
+    private String type; // CLAIM_APPROVED, CLAIM_REJECTED, ITEM_RECOVERED, MATCH_ALERT
     private boolean isRead;
     private String createdAt;
 

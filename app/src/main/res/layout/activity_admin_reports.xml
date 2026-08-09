@@ -63,7 +63,7 @@
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
-                <!-- Item Row: Total Users -->
+
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -93,7 +93,7 @@
                     android:layout_marginBottom="12dp"
                     android:background="@color/card_stroke" />
 
-                <!-- Item Row: Total Lost Items -->
+
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -123,7 +123,7 @@
                     android:layout_marginBottom="12dp"
                     android:background="@color/card_stroke" />
 
-                <!-- Item Row: Total Found Items -->
+
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -153,7 +153,7 @@
                     android:layout_marginBottom="12dp"
                     android:background="@color/card_stroke" />
 
-                <!-- Item Row: Recovered Items -->
+
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -183,7 +183,7 @@
                     android:layout_marginBottom="12dp"
                     android:background="@color/card_stroke" />
 
-                <!-- Item Row: Pending Claims -->
+
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">

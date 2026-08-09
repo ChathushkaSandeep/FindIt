@@ -67,7 +67,6 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
         holder.tvDate.setText(item.getDate());
         holder.tvDescription.setText(item.getDescription());
 
-        // Type Badge
         if ("LOST".equalsIgnoreCase(item.getType())) {
             holder.tvTypeBadge.setText("LOST");
             holder.tvTypeBadge.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#FEE2E2")));
@@ -78,7 +77,6 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
             holder.tvTypeBadge.setTextColor(Color.parseColor("#10B981"));
         }
 
-        // Status Badge
         String status = item.getStatus() != null ? item.getStatus().toUpperCase() : "VERIFIED";
         holder.tvStatusBadge.setText(status);
         if ("RECOVERED".equalsIgnoreCase(status)) {
@@ -108,7 +106,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
             holder.ivPlaceholder.setVisibility(View.VISIBLE);
         }
 
-        // Action Button
+
         if (actionListener != null && !actionButtonText.isEmpty() && !"RECOVERED".equalsIgnoreCase(status)) {
             holder.btnItemAction.setVisibility(View.VISIBLE);
             holder.btnItemAction.setText(actionButtonText);

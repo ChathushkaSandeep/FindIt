@@ -39,7 +39,7 @@
                 android:textStyle="bold" />
         </RelativeLayout>
 
-        <!-- Report Type Toggle -->
+
         <RadioGroup
             android:id="@+id/rgType"
             android:layout_width="match_parent"
@@ -131,7 +131,7 @@
                 android:id="@+id/etLocation"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Location (e.g. Science Block Floor 2)"
+                android:hint="Location (e.g. Ahungalla Town)"
                 android:textColor="@color/text_primary"
                 android:textColorHint="@color/text_secondary" />
         </com.google.android.material.textfield.TextInputLayout>
@@ -184,7 +184,7 @@
                 android:textColorHint="@color/text_secondary" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Image Upload Section -->
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

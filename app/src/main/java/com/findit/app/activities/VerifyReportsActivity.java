@@ -45,7 +45,6 @@ public class VerifyReportsActivity extends AppCompatActivity {
     }
 
     private void loadReports() {
-        // Load all active items for moderation / verification
         dbHelper.searchAndFilterItems("", "All", "", "", "ALL", "ALL", "Newest",
                 new FirestoreHelper.Callback<List<Item>>() {
                     @Override
@@ -58,7 +57,6 @@ public class VerifyReportsActivity extends AppCompatActivity {
                             rvReports.setVisibility(View.VISIBLE);
 
                             adapter = new ItemAdapter(VerifyReportsActivity.this, items, item -> {
-                                // Click action
                             });
 
                             adapter.setActionListener("Remove Fraudulent Report", item -> {

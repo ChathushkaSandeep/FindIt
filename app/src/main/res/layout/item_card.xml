@@ -37,7 +37,7 @@
                 android:src="@drawable/ic_image_placeholder"
                 app:tint="@color/text_muted" />
 
-            <!-- Type Badge (LOST/FOUND) -->
+
             <TextView
                 android:id="@+id/tvTypeBadge"
                 android:layout_width="wrap_content"
@@ -53,7 +53,7 @@
                 android:textSize="11sp"
                 android:textStyle="bold" />
 
-            <!-- Status Badge (VERIFIED/RECOVERED/PENDING) -->
+
             <TextView
                 android:id="@+id/tvStatusBadge"
                 android:layout_width="wrap_content"
@@ -151,7 +151,7 @@
                 android:textColor="@color/text_secondary"
                 android:textSize="13sp" />
 
-            <!-- Action Button Area (e.g. Mark as Recovered or Submit Claim) -->
+
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnItemAction"
                 style="@style/Widget.MaterialComponents.Button.UnelevatedButton"

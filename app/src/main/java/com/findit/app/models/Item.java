@@ -10,8 +10,8 @@ public class Item {
     private String category;
     private String location;
     private String date;
-    private String type; // "LOST", "FOUND"
-    private String status; // "PENDING", "VERIFIED", "RECOVERED", "REJECTED"
+    private String type; // LOST, FOUND
+    private String status; // PENDING, VERIFIED, RECOVERED, REJECTED
     private String imageUri;
     private String createdAt;
 

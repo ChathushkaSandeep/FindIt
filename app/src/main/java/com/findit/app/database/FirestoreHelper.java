@@ -45,9 +45,7 @@ public class FirestoreHelper {
         return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
     }
 
-    // ==========================================
     // USER & PROFILE OPERATIONS
-    // ==========================================
 
     public void registerUser(User user, Callback<String> callback) {
         user.setCreatedAt(getCurrentTimestamp());
@@ -105,9 +103,7 @@ public class FirestoreHelper {
                 .addOnFailureListener(callback::onFailure);
     }
 
-    // ==========================================
     // ITEM REPORTING & SEARCH
-    // ==========================================
 
     public void insertItem(Item item, Callback<String> callback) {
         item.setCreatedAt(getCurrentTimestamp());
@@ -237,8 +233,7 @@ public class FirestoreHelper {
             callback.onSuccess(items);
             return items;
         }
-        // In a real app we'd batch fetch, but here for simplicity we just fetch in a
-        // loop.
+
         int[] count = { 0 };
         for (Item item : items) {
             if (item.getUserId() != null) {
@@ -270,9 +265,7 @@ public class FirestoreHelper {
         return items;
     }
 
-    // ==========================================
     // CLAIMS & NOTIFICATIONS
-    // ==========================================
 
     public void submitClaim(Claim claim, Callback<String> callback) {
         claim.setStatus("PENDING");
@@ -445,9 +438,7 @@ public class FirestoreHelper {
                 });
     }
 
-    // ==========================================
     // ADMIN PANEL & REPORTS
-    // ==========================================
 
     public void getAllUsers(Callback<List<User>> callback) {
         usersRef.get().addOnSuccessListener(snapshots -> callback.onSuccess(snapshots.toObjects(User.class)))

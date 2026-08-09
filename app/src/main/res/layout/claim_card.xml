@@ -113,7 +113,7 @@
                 android:textSize="12sp" />
         </LinearLayout>
 
-        <!-- Action Buttons for Admin (Approve / Reject) -->
+
         <LinearLayout
             android:id="@+id/layoutAdminClaimActions"
             android:layout_width="match_parent"

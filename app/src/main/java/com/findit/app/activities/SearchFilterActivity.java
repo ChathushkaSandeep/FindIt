@@ -77,7 +77,6 @@ public class SearchFilterActivity extends AppCompatActivity {
 
         rvSearchResults.setLayoutManager(new LinearLayoutManager(this));
 
-        // Spinners Setup
         ArrayAdapter<String> typeAdapter = new ArrayAdapter<>(this, R.layout.spinner_item, typeOptions);
         typeAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
         spTypeFilter.setAdapter(typeAdapter);
@@ -90,7 +89,6 @@ public class SearchFilterActivity extends AppCompatActivity {
         sortAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
         spSortBy.setAdapter(sortAdapter);
 
-        // Date Picker for filter
         etDateFilter.setOnClickListener(v -> {
             DatePickerDialog dialog = new DatePickerDialog(this,
                     (view, year, month, dayOfMonth) -> {
@@ -104,7 +102,6 @@ public class SearchFilterActivity extends AppCompatActivity {
             dialog.show();
         });
 
-        // Real-time search as user types
         etKeyword.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {

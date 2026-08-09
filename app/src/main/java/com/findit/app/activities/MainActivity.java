@@ -58,7 +58,6 @@ public class MainActivity extends AppCompatActivity {
 
         setupRoleView();
 
-        // ViewPager Adapter
         viewPager.setAdapter(new MainPagerAdapter(this));
         new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
             if (position == 0) {
@@ -68,7 +67,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }).attach();
 
-        // Header Listeners
         btnHeaderSearch.setOnClickListener(v -> startActivity(new Intent(this, SearchFilterActivity.class)));
         btnHeaderNotifications.setOnClickListener(v -> startActivity(new Intent(this, NotificationsActivity.class)));
         btnHeaderProfile.setOnClickListener(v -> startActivity(new Intent(this, ProfileActivity.class)));
@@ -77,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
             btnOpenAdminPanel.setOnClickListener(v -> startActivity(new Intent(this, AdminDashboardActivity.class)));
         }
 
-        // Bottom Navigation listener
+
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
             if (itemId == R.id.nav_home) {
@@ -95,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
             return false;
         });
 
-        // FAB Click listener (Bottom Sheet Choice)
+
         fabReport.setOnClickListener(v -> showReportChoiceDialog());
     }
 

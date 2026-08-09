@@ -10,7 +10,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <!-- Header Bar -->
+
         <RelativeLayout
             android:id="@+id/headerBar"
             android:layout_width="match_parent"
@@ -55,7 +55,7 @@
                 android:layout_centerVertical="true"
                 android:orientation="horizontal">
 
-                <!-- Search Icon -->
+
                 <ImageView
                     android:id="@+id/btnHeaderSearch"
                     android:layout_width="40dp"
@@ -67,7 +67,7 @@
                     android:src="@drawable/ic_search"
                     app:tint="@color/text_primary" />
 
-                <!-- Notifications Icon -->
+
                 <ImageView
                     android:id="@+id/btnHeaderNotifications"
                     android:layout_width="40dp"
@@ -80,7 +80,7 @@
                     android:src="@drawable/ic_notifications"
                     app:tint="@color/text_primary" />
 
-                <!-- Profile Icon -->
+
                 <ImageView
                     android:id="@+id/btnHeaderProfile"
                     android:layout_width="40dp"
@@ -96,7 +96,7 @@
             </LinearLayout>
         </RelativeLayout>
 
-        <!-- Admin Panel Banner -->
+
         <LinearLayout
             android:id="@+id/adminBanner"
             android:layout_width="match_parent"
@@ -136,7 +136,7 @@
                 app:cornerRadius="18dp" />
         </LinearLayout>
 
-        <!-- Navigation Tabs -->
+
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tabLayout"
             android:layout_width="match_parent"
@@ -149,7 +149,7 @@
             app:tabSelectedTextColor="@color/primary"
             app:tabTextColor="@color/text_secondary" />
 
-        <!-- ViewPager2 for Fragments -->
+
         <androidx.viewpager2.widget.ViewPager2
             android:id="@+id/viewPager"
             android:layout_width="match_parent"
@@ -158,7 +158,7 @@
 
     </LinearLayout>
 
-    <!-- Bottom App Bar with Embedded BottomNavigationView -->
+
     <com.google.android.material.bottomappbar.BottomAppBar
         android:id="@+id/bottomAppBar"
         android:layout_width="match_parent"
@@ -184,7 +184,7 @@
 
     </com.google.android.material.bottomappbar.BottomAppBar>
 
-    <!-- Central FAB for "+ Report" -->
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabReport"
         android:layout_width="wrap_content"

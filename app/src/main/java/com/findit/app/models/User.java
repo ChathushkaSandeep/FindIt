@@ -6,8 +6,8 @@ public class User {
     private String email;
     private String phone;
     private String password;
-    private String role; // "USER", "ADMIN"
-    private String status; // "ACTIVE", "SUSPENDED"
+    private String role; // USER, ADMIN
+    private String status; // ACTIVE, SUSPENDED
     private String createdAt;
 
     public User() {

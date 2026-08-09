@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- Top Header & Image Banner -->
+
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="280dp"
@@ -216,7 +216,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="John Doe (0719876543)"
+                            android:text="Chathu(0719876543)"
                             android:textColor="@color/text_primary" />
                     </LinearLayout>
 
@@ -242,7 +242,7 @@
                 android:textColor="@color/text_secondary"
                 android:textSize="14sp" />
 
-            <!-- Action: Submit Claim Button -->
+
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSubmitClaim"
                 style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
@@ -256,7 +256,7 @@
                 app:backgroundTint="@color/accent"
                 app:cornerRadius="12dp" />
 
-            <!-- Action: Contact Reporter Button -->
+
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnContactReporter"
                 style="@style/Widget.MaterialComponents.Button.UnelevatedButton"

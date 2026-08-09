@@ -94,7 +94,7 @@ public class ReportItemActivity extends AppCompatActivity {
 
         btnBack.setOnClickListener(v -> finish());
 
-        // Check if pre-set type from intent
+
         String initialType = getIntent().getStringExtra("REPORT_TYPE");
         if ("FOUND".equalsIgnoreCase(initialType)) {
             rbFound.setChecked(true);
@@ -112,15 +112,12 @@ public class ReportItemActivity extends AppCompatActivity {
             }
         });
 
-        // Setup Category Spinner
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item,
                 categories);
         spCategory.setAdapter(adapter);
 
-        // Setup Date Picker
         etDate.setOnClickListener(v -> showDatePicker());
 
-        // Setup Image Upload Click
         View.OnClickListener pickImageListener = v -> {
             Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
             imagePickerLauncher.launch(intent);
